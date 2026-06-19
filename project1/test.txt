@@ -1,0 +1,47 @@
+Problem statement
+People has applied loan (home purchase, personal, business, auto, education, refinance, medical), and based the personal information the lender has decided for recommended loan amount (target column).
+Few things to note - every finance related history of the borrower has been included, we have to create a model that would predict based on personal information how much loan should be approved for borrower.
+- loan term months
+- market rate
+
+3. Reason for the Problem
+Explain the following in your project documentation:
+
+Why the problem exists? Because the dataset was provided but other than that, the solution is aim towards solving a problem in fintech domain, where based on person's financial details how much loan a lender can approve, all the columns will definetly play important role in deciding the loan amount.
+Limitations of the current system? Currently the system limted in a sense, where a person's financial background will be taken into consideration where number of years he's employed for, then annual income, existing debt and credit score are considered deciding factors but hidden factor as inherited property or lum sum, loan  
+Business impact (cost, inefficiency, risk, etc.)
+Focus on practical reasoning, not just technical explanation.
+
+
+Data Collection
+The data contains 15000 records of borrower financial profiles that mimics the real world.
+
+# Data visualization and observation
+1. Savings > Annual income 3662 rows
+2. Savings duplicate values for 800000.00 7 records for that
+df.loc[df['savings_balance'] == 800000, 'savings_balance'] = np.nan
+
+More observations - 
+1. After a scatter plot between savings and annual income, I got that some people have income less than $1M but has savings upto $800k (Outliers need more inspection)
+
+
+Data Preparation
+Based on initial visualization and overview of the data, there are missing values in only 2 columns i.e. savings balance and existing debt
+- Assumption can be made if existing debt is missing it should be 0, the person doesn't have a previous loan
+- Assumption 2, would be for savings balance that these people hasn't reported it reason can be anything, so the imputation should be based group the annual income and monthly expense. eg. if we have a data where annual income is 111847.46	and monthly expense is 5482.05 that has savings balance is 128214.10. So someone close to same numbers would have avg saving balance of that group.
+We have to make sure categorical columns like loan purpose and employment type should be represented in numerical values as regression models mostly deals with numerical data, so, label encoding is the way to go.
+Next the outliers, quite important, so, as the data mimics the real world we have to go with the multi-variate outlier approach for annual income, as it's the deciding factor for recommended loan amount (will be proved with feature importance)
+After doing this we would move on with skewness for target and predictor columns, so we could do log transformation if required.
+High collinearity is also a problem for linear and logistic regression, so, a solution here would be a separate copy of the data, as tree based models are less prone to collinearity problem.
+- For highly collinear features/columns, where possible combine or dropping one of the column is the way to go.
+
+Model selection & Training
+- Linear, Logistic (Data copy 1) (Pipeline 1)
+- Tree based model - Random Forest, XGBoost (Data copy 2) (Pipeline 2)
+
+Pipeline Evaluation
+- Pipelines will be compared and then models within each pipeline will be compared
+- Train/test split would be done once for both pipelines
+and  then high collinear features removed/combined
+
+Monitoring & Maintenance
