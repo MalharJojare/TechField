@@ -29,7 +29,7 @@ FEATURES = [
 ]
 
 # =========================
-# SESSION STATE RESET LOGIC
+# RESET APP
 # =========================
 def reset_app():
     for k in list(st.session_state.keys()):
@@ -40,16 +40,15 @@ if "step" not in st.session_state:
     st.session_state.step = 1
 
 # =========================
-# LOGOUT BUTTON (TOP RIGHT)
+# LOGOUT
 # =========================
 col1, col2 = st.columns([9, 1])
-
 with col2:
     if st.button("🚪 Logout"):
         reset_app()
 
 # =========================
-# SIDEBAR NAVIGATION
+# SIDEBAR NAV
 # =========================
 st.sidebar.title("🏦 Navigation")
 
@@ -63,37 +62,27 @@ steps = [
     "Review"
 ]
 
-def go(step):
-    st.session_state.step = step
-    st.rerun()
-
 for i, s in enumerate(steps, 1):
-
-    # restrict jumping to first 2 steps
-    if i <= 2:
-        st.sidebar.markdown(f"🔒 {s}")
+    if i <= st.session_state.step:
+        if st.sidebar.button(s, key=f"nav_{i}"):
+            st.session_state.step = i
+            st.rerun()
     else:
-        if st.sidebar.button(s):
-            go(i)
+        st.sidebar.markdown(f"🔒 {s}")
 
 st.sidebar.progress(st.session_state.step / len(steps))
 
-# =========================
-# HEADER
-# =========================
 st.title("🏦 Smart Loan Application Portal")
-
 st.progress(st.session_state.step / len(steps))
 
 # =========================
-# VALIDATORS
+# EMAIL VALIDATION
 # =========================
 def valid_email(email):
-    pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-    return re.match(pattern, email)
+    return re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email)
 
 # =========================
-# STEP 1 - PERSONAL INFO
+# STEP 1 - PERSONAL
 # =========================
 if st.session_state.step == 1:
 
@@ -106,63 +95,60 @@ if st.session_state.step == 1:
         "Date of Birth",
         min_value=date(1920, 1, 1),
         max_value=date.today(),
-        value=date(1995, 1, 1)        # default safe value
+        value=date(1995, 1, 1)
     )
 
-    today = date.today()
-    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    age = date.today().year - dob.year - (
+        (date.today().month, date.today().day) < (dob.month, dob.day)
+    )
 
-    show_error = False
-
-    if st.button("Next ➜"):
-
-        if age < 18:
-            st.error("Applicant must be at least 18 years old")
-            show_error = True
-        else:
-            st.session_state.first_name = first_name
-            st.session_state.last_name = last_name
-            st.session_state.age = age
-            st.session_state.step = 2
-            st.rerun()
     col1, col2 = st.columns(2)
 
+    with col1:
+        if st.button("Next ➜"):
+            if age < 18:
+                st.error("Must be 18+")
+            else:
+                st.session_state.first_name = first_name
+                st.session_state.last_name = last_name
+                st.session_state.age = age
+                st.session_state.step = 2
+                st.rerun()
+
+    with col2:
+        if st.button("Reset"):
+            reset_app()
+
 # =========================
-# STEP 2 - EMAIL OTP
+# STEP 2 - EMAIL
 # =========================
 elif st.session_state.step == 2:
 
     st.subheader("Step 2: Email Verification")
 
-    email = st.text_input("Email Address")
+    email = st.text_input("Email")
 
     if st.button("Send OTP"):
 
         if not valid_email(email):
-            st.error("Invalid email format")
+            st.error("Invalid email")
         else:
             st.session_state.email = email
             st.session_state.otp = str(random.randint(100000, 999999))
-            st.success("OTP sent (demo mode)")
-            st.info(f"DEMO OTP: {st.session_state.otp}")
+            st.success(f"OTP Sent (demo): {st.session_state.otp}")
 
     otp_input = st.text_input("Enter OTP")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("Verify Email"):
-
+        if st.button("Verify"):
             if otp_input == st.session_state.get("otp"):
-                st.session_state.email_verified = True
-                st.success("Email Verified ✔")
-
-                # AUTO MOVE NEXT
                 st.session_state.step = 3
+                st.success("Verified ✔")
                 st.rerun()
-
             else:
-                st.error("Invalid OTP")
+                st.error("Wrong OTP")
 
     with col2:
         if st.button("Back"):
@@ -177,12 +163,7 @@ elif st.session_state.step == 3:
     st.subheader("Step 3: Employment")
 
     years_employed = st.number_input("Years Employed", 0, 50, 5)
-    annual_income = st.number_input("Annual Income", 0.0, 1000000.0, 80000.0)
-
-    employment_type = st.selectbox(
-        "Employment Type",
-        ["salaried", "self_employed", "contract"]
-    )
+    annual_income = st.number_input("Annual Income", 0.0, 1_000_000.0, 80000.0)
 
     col1, col2 = st.columns(2)
 
@@ -195,7 +176,6 @@ elif st.session_state.step == 3:
         if st.button("Next"):
             st.session_state.years_employed = years_employed
             st.session_state.annual_income = annual_income
-            st.session_state.employment_type = employment_type
             st.session_state.step = 4
             st.rerun()
 
@@ -206,9 +186,9 @@ elif st.session_state.step == 4:
 
     st.subheader("Step 4: Credit Profile")
 
-    credit_score = st.text_input("Credit Score (300–850)")
-    dti_ratio = st.text_input("DTI Ratio (0.0, 1.0, 0.3)")
-    existing_debt = st.number_input("Existing Debt", 0.0, 1000000.0, 10000.0)
+    credit_score = st.text_input("Credit Score (300-850)")
+    dti_ratio = st.number_input("DTI Ratio", 0.0, 1.0, 0.3)
+    existing_debt = st.number_input("Existing Debt", 0.0, 1_000_000.0, 10000.0)
 
     num_open_credit_lines = st.number_input("Open Credit Lines", 0, 20, 5)
     num_previous_defaults = st.number_input("Previous Defaults", 0, 10, 0)
@@ -224,19 +204,18 @@ elif st.session_state.step == 4:
         if st.button("Next"):
 
             if not credit_score.isdigit():
-                st.error("Credit score must be numeric")
+                st.error("Invalid credit score")
             else:
-                credit_score = int(credit_score)
+                cs = int(credit_score)
 
-                if credit_score < 300 or credit_score > 850:
-                    st.error("Credit score must be 300–850")
+                if cs < 300 or cs > 850:
+                    st.error("Range 300-850")
                 else:
-                    st.session_state.credit_score = credit_score
+                    st.session_state.credit_score = cs
                     st.session_state.dti_ratio = dti_ratio
                     st.session_state.existing_debt = existing_debt
                     st.session_state.num_open_credit_lines = num_open_credit_lines
                     st.session_state.num_previous_defaults = num_previous_defaults
-
                     st.session_state.step = 5
                     st.rerun()
 
@@ -247,8 +226,8 @@ elif st.session_state.step == 5:
 
     st.subheader("Step 5: Financials")
 
-    monthly_expenses = st.number_input("Monthly Expenses", 0.0, 100000.0, 3000.0)
-    savings_balance = st.number_input("Savings Balance", 0.0, 1000000.0, 50000.0)
+    monthly_expenses = st.number_input("Monthly Expenses", 0.0, 1_000_000.0, 3000.0)
+    savings_balance = st.number_input("Savings Balance", 0.0, 1_000_000.0, 50000.0)
 
     property_owned = st.selectbox("Property Owned", ["No", "Yes"])
 
@@ -268,7 +247,7 @@ elif st.session_state.step == 5:
             st.rerun()
 
 # =========================
-# STEP 6 - LOAN DETAILS
+# STEP 6 - LOAN
 # =========================
 elif st.session_state.step == 6:
 
@@ -282,27 +261,27 @@ elif st.session_state.step == 6:
         st.rerun()
 
 # =========================
-# STEP 7 - REVIEW + PREDICT
+# STEP 7 - PREDICTION
 # =========================
 elif st.session_state.step == 7:
 
-    st.subheader("Step 7: Review & Predict")
+    st.subheader("Review & Predict")
 
-    if st.button("Generate Loan Recommendation"):
+    if st.button("Generate Prediction"):
 
         input_df = pd.DataFrame([{
-            "age": st.session_state.age,
-            "years_employed": st.session_state.years_employed,
-            "annual_income": st.session_state.annual_income,
-            "credit_score": st.session_state.credit_score,
-            "dti_ratio": st.session_state.dti_ratio,
-            "existing_debt": st.session_state.existing_debt,
-            "monthly_expenses": st.session_state.monthly_expenses,
-            "savings_balance": st.session_state.savings_balance,
-            "num_open_credit_lines": st.session_state.num_open_credit_lines,
-            "num_previous_defaults": st.session_state.num_previous_defaults,
-            "property_owned": 1 if st.session_state.property_owned == "Yes" else 0,
-            "loan_term_months": st.session_state.loan_term_months
+            "age": float(st.session_state.age),
+            "years_employed": float(st.session_state.years_employed),
+            "annual_income": float(st.session_state.annual_income),
+            "credit_score": float(st.session_state.credit_score),
+            "dti_ratio": float(st.session_state.dti_ratio),
+            "existing_debt": float(st.session_state.existing_debt),
+            "monthly_expenses": float(st.session_state.monthly_expenses),
+            "savings_balance": float(st.session_state.savings_balance),
+            "num_open_credit_lines": float(st.session_state.num_open_credit_lines),
+            "num_previous_defaults": float(st.session_state.num_previous_defaults),
+            "property_owned": float(st.session_state.property_owned == "Yes"),
+            "loan_term_months": float(st.session_state.loan_term_months)
         }])
 
         input_df = input_df.reindex(columns=FEATURES)
