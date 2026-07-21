@@ -201,17 +201,6 @@ python -m pytest tests/ -v
 
 ---
 
-## 🐛 Known Issues
-
-| Issue | Status |
-|---|---|
-| Instagram `listener.py` and `sender.py` are empty stubs | ⏳ Incomplete |
-| Chrome extension `popup.js` and `content.js` are missing | ⏳ Incomplete |
-| `workflow/` directory is empty | ⏳ Not implemented |
-| `playwright` missing from `requirements.txt` | ✅ Fixed |
-
----
-
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
