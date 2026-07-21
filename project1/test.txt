@@ -1,47 +1,302 @@
-Problem statement
-People has applied loan (home purchase, personal, business, auto, education, refinance, medical), and based the personal information the lender has decided for recommended loan amount (target column).
-Few things to note - every finance related history of the borrower has been included, we have to create a model that would predict based on personal information how much loan should be approved for borrower.
-- loan term months
-- market rate
+# Smart Loan Application Portal Presentation Script
 
-3. Reason for the Problem
-Explain the following in your project documentation:
+## Slide 1 – Title
 
-Why the problem exists? Because the dataset was provided but other than that, the solution is aim towards solving a problem in fintech domain, where based on person's financial details how much loan a lender can approve, all the columns will definetly play important role in deciding the loan amount.
-Limitations of the current system? Currently the system limted in a sense, where a person's financial background will be taken into consideration where number of years he's employed for, then annual income, existing debt and credit score are considered deciding factors but hidden factor as inherited property or lum sum, loan  
-Business impact (cost, inefficiency, risk, etc.)
-Focus on practical reasoning, not just technical explanation.
+**"Good morning/afternoon everyone. My name is Malhar Jojare, and today I'll be presenting my Smart Loan Application Portal, which is a machine learning-based loan amount recommendation system."**
 
+The objective of this project is to develop a regression model that recommends an appropriate loan amount based on a borrower's financial and credit profile.
 
-Data Collection
-The data contains 15000 records of borrower financial profiles that mimics the real world.
+This project combines two important aspects:
 
-# Data visualization and observation
-1. Savings > Annual income 3662 rows
-2. Savings duplicate values for 800000.00 7 records for that
-df.loc[df['savings_balance'] == 800000, 'savings_balance'] = np.nan
+* A machine learning model that predicts the recommended loan amount.
+* A complete web application that allows non-technical users to interact with the model through an easy-to-use interface.
 
-More observations - 
-1. After a scatter plot between savings and annual income, I got that some people have income less than $1M but has savings upto $800k (Outliers need more inspection)
+Rather than only building a predictive model inside a notebook, I wanted to demonstrate the complete workflow—from data preparation and model development to deployment as a usable business application.
 
+---
 
-Data Preparation
-Based on initial visualization and overview of the data, there are missing values in only 2 columns i.e. savings balance and existing debt
-- Assumption can be made if existing debt is missing it should be 0, the person doesn't have a previous loan
-- Assumption 2, would be for savings balance that these people hasn't reported it reason can be anything, so the imputation should be based group the annual income and monthly expense. eg. if we have a data where annual income is 111847.46	and monthly expense is 5482.05 that has savings balance is 128214.10. So someone close to same numbers would have avg saving balance of that group.
-We have to make sure categorical columns like loan purpose and employment type should be represented in numerical values as regression models mostly deals with numerical data, so, label encoding is the way to go.
-Next the outliers, quite important, so, as the data mimics the real world we have to go with the multi-variate outlier approach for annual income, as it's the deciding factor for recommended loan amount (will be proved with feature importance)
-After doing this we would move on with skewness for target and predictor columns, so we could do log transformation if required.
-High collinearity is also a problem for linear and logistic regression, so, a solution here would be a separate copy of the data, as tree based models are less prone to collinearity problem.
-- For highly collinear features/columns, where possible combine or dropping one of the column is the way to go.
+# Slide 2 – Project Goal & Business Problem
 
-Model selection & Training
-- Linear, Logistic (Data copy 1) (Pipeline 1)
-- Tree based model - Random Forest, XGBoost (Data copy 2) (Pipeline 2)
+Every day, banks and financial institutions receive thousands of loan applications.
 
-Pipeline Evaluation
-- Pipelines will be compared and then models within each pipeline will be compared
-- Train/test split would be done once for both pipelines
-and  then high collinear features removed/combined
+Traditionally, these applications are reviewed manually by loan officers.
 
-Monitoring & Maintenance
+While experienced underwriters make good decisions, the process has several challenges.
+
+First, manual review is time-consuming.
+
+Second, different officers may recommend different loan amounts for very similar applicants, leading to inconsistent decisions.
+
+Third, manual processing increases operational costs and slows down approvals, which negatively affects customer experience.
+
+The goal of this project is not to replace human decision-making but to support it.
+
+The machine learning model analyzes a borrower's financial profile and recommends an appropriate loan amount based on historical patterns in the data.
+
+This creates a faster, more consistent, and data-driven recommendation process while allowing loan officers to make the final lending decision.
+
+---
+
+# Slide 3 – Dataset Overview
+
+Now let's look at the dataset used to train the model.
+
+The dataset contains approximately 15,000 borrower records with 17 columns.
+
+Since the output is a continuous loan amount, this is a supervised regression problem.
+
+The target variable is **recommended_loan_amount**.
+
+The input features describe the borrower's financial and personal profile.
+
+Examples include:
+
+* Age
+* Annual income
+* Credit score
+* Debt-to-income ratio
+* Savings balance
+* Employment history
+* Property ownership
+* Previous loan defaults
+* Loan term
+
+These features collectively provide enough information for the model to estimate a suitable loan amount.
+
+The dataset contains a mix of numerical and categorical variables, which required preprocessing before model training.
+
+---
+
+# Slide 4 – Data Preparation
+
+Before building any machine learning model, the quality of the data must be improved.
+
+The notebook begins with data exploration to identify missing values, outliers, and inconsistencies.
+
+One interesting issue appeared in the savings balance column.
+
+Some borrowers had unrealistic savings values.
+
+Instead of simply removing those records or replacing them with the average, I designed an income-based replacement strategy.
+
+I grouped borrowers based on years of employment and estimated more realistic savings values using their income.
+
+This approach preserved relationships between financial variables while reducing unrealistic values.
+
+Cleaning the data before training improves both model accuracy and reliability.
+
+---
+
+# Slide 5 – Exploratory Data Analysis
+
+Exploratory Data Analysis helps us understand the relationships within the data before building predictive models.
+
+The notebook uses SQL-style analysis together with visualizations.
+
+I analyzed variables such as:
+
+* Age
+* Annual income
+* Savings
+* Debt ratio
+* Employment years
+* Credit score
+
+The first correlation heatmap shows the relationships before cleaning.
+
+After cleaning, we can see stronger and more meaningful correlations, indicating that noise was reduced.
+
+The savings versus income scatter plot also became much more realistic after preprocessing.
+
+The distribution of savings across years of employment shows that savings generally increase with work experience, which aligns with real-world financial behavior.
+
+These visualizations gave confidence that the cleaned dataset better represented realistic borrower profiles.
+
+---
+
+# Slide 6 – MICE Imputation vs My Approach
+
+For missing savings values, I compared two different strategies.
+
+The first was MICE, which is a widely used multiple imputation technique.
+
+MICE estimates missing values using many variables simultaneously.
+
+While it is very flexible, it sometimes produced savings values greater than annual income.
+
+Although this may happen in rare situations, such values were unrealistic for many borrowers in this dataset.
+
+My custom approach introduced business constraints by estimating savings based on income and employment characteristics.
+
+This produced more realistic values while preserving logical financial relationships.
+
+This comparison demonstrates that domain knowledge is just as important as sophisticated algorithms.
+
+Sometimes a simpler method aligned with business rules performs better than a statistically complex method.
+
+---
+
+# Slide 7 – Modeling Approach
+
+After preparing the data, I trained several regression models.
+
+The models evaluated were:
+
+* Linear Regression
+* Random Forest Regressor
+* XGBoost Regressor
+
+Linear Regression served as a baseline model.
+
+Random Forest improved performance by capturing nonlinear relationships.
+
+However, Random Forest produced the best predictive accuracy.
+
+Random Forest builds multiple decision trees using different random subsets of the training data and features. The final prediction is obtained by averaging the predictions from all the trees, which improves accuracy and reduces overfitting.
+
+It handles nonlinear relationships, interactions between variables, and complex financial patterns very effectively.
+
+After training, I saved the final model as a pickle file.
+
+The deployed Streamlit application loads this saved model directly for predictions without retraining.
+
+---
+
+# Slide 8 – Performance
+
+I evaluated three regression algorithms: Linear Regression, Random Forest, and XGBoost. Linear Regression served as a baseline but couldn't capture the nonlinear relationships in the data. Both ensemble models performed significantly better. After comparing the evaluation metrics, Random Forest achieved the highest R² score and the lowest RMSE on the test dataset, so I selected it as the final model for deployment.
+
+An R² value close to 1 indicates that the model explains nearly all variation in the target variable.
+
+This suggests that the model learned the relationships in the training data very effectively.
+
+I also investigated whether features showing zero correlation with the target should be removed. After retraining and evaluating the model, I compared the results to determine whether feature reduction improved performance or simplified the model.
+
+In addition to evaluating the model on a single test set, I also performed 5-fold cross-validation. The model achieved a mean R² score of approximately 0.9981 with a standard deviation of only 0.00037. This indicates that the model's performance is highly consistent across different subsets of the dataset and is not dependent on a single train-test split.
+
+The feature importance plot shows that annual income, credit score, debt ratio, and savings contribute the most to the recommended loan amount, while some demographic variables have relatively smaller influence.
+
+These steps help ensure the model generalizes well beyond the training dataset.
+
+---
+
+# Transition to Live Demo
+
+Now that we've seen how the model was built and evaluated, I'd like to demonstrate how an end user actually interacts with the system.
+
+Instead of working inside a Jupyter notebook, the user simply opens a web application.
+
+I'll now switch to the Streamlit application.
+
+---
+
+# LIVE DEMO SCRIPT
+
+(Start the application)
+
+The application guides users through a structured loan application process.
+
+### Step 1
+
+First, the applicant enters their personal information.
+
+The interface validates the inputs before allowing the user to continue.
+
+---
+
+### Step 2
+
+Next is email verification using a one-time password.
+
+This demonstrates how authentication can be integrated into the application before processing financial information.
+
+---
+
+### Step 3
+
+The applicant enters employment information, including employment status and years employed.
+
+---
+
+### Step 4
+
+Next comes the credit profile.
+
+This includes credit score, previous defaults, and other financial risk indicators.
+
+---
+
+### Step 5
+
+The applicant enters financial information such as annual income, savings balance, and debt ratio.
+
+These are some of the most influential variables used by the prediction model.
+
+---
+
+### Step 6
+
+Finally, the applicant specifies loan-related information such as loan term.
+
+---
+
+### Step 7
+
+The final page summarizes all entered information.
+
+After clicking Predict, the application arranges the features in exactly the same order used during model training.
+
+The saved Random Forest model is loaded, performs inference within seconds, and returns the recommended loan amount.
+
+Throughout the application, Streamlit Session State stores user information across multiple pages so users don't lose previously entered data.
+
+This demonstrates how machine learning can be integrated into a real user workflow instead of existing only inside a notebook.
+
+(End Demo)
+
+---
+
+# Return to Slides
+
+Now that we've seen the application in action, let's summarize the overall project.
+
+---
+
+# Slide 9 – Key Takeaways
+
+This project demonstrates both analytical and product development skills.
+
+From the analytics perspective, it includes:
+
+* Data cleaning
+* Missing value handling
+* Exploratory data analysis
+* Feature understanding
+* Model comparison
+* Machine learning deployment
+
+From the product perspective, it demonstrates:
+
+* A multi-step user interface
+* Input validation
+* Session management
+* Email verification
+* Model integration into a real application
+
+This shows the complete machine learning lifecycle—from raw data to an interactive decision-support system.
+
+---
+
+# Slide 10 – Conclusion
+
+To conclude, this project demonstrates how machine learning can support lending decisions by providing fast, consistent, and data-driven loan recommendations.
+
+The notebook establishes the analytical foundation through data preparation, exploratory analysis, and model training.
+
+The Streamlit application transforms that analytical model into a practical tool that business users can easily operate without needing technical knowledge.
+
+Together, they represent an end-to-end machine learning solution that bridges data science and real-world business applications.
+
+Thank you for your time.
+
+I'd be happy to answer any questions.
