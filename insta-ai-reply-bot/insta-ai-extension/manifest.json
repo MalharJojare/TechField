@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+
+  "name": "Instagram AI Reply Bot",
+
+  "version": "1.0",
+
+  "description": "AI assistant for Instagram DM replies",
+
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+
+  "host_permissions": [
+    "https://www.instagram.com/*",
+    "http://127.0.0.1:8000/*"
+  ],
+
+  "action": {
+    "default_title": "AI Reply Bot",
+    "default_popup": "popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*"
+      ],
+      "js": [
+        "config.js",
+        "content.js"
+      ]
+    }
+  ]
+}
